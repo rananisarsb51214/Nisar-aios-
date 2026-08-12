@@ -2,7 +2,7 @@
 
 [![Build Status](https://img.shields.io/travis/com/rananisarsb51214-web/Nisar-aios-.svg?style=flat-square)](https://travis-ci.com/rananisarsb51214-web/Nisar-aios-)
 [![Version](https://img.shields.io/github/v/release/rananisarsb51214-web/Nisar-aios-?style=flat-square)](https://github.com/rananisarsb51214-web/Nisar-aios-/releases)
-[![License](https://img.shields.io/github/license/rananisarsb51214-web/Nisar-aios-?style=flat-square)](https://github.com/rananisarsb51214-web/Nisar-aios-/blob/main/LICENSE) 
+[![License](https://img.shields.io/github/license/rananisarsb51214-web/Nisar-aios-?style=flat-square)](https://github.com/rananisarsb51214-web/Nisar-aios-/blob/main/LICENSE)
 [![Stars](https://img.shields.io/github/stars/rananisarsb51214-web/Nisar-aios-?style=flat-square)](https://github.com/rananisarsb51214-web/Nisar-aios-/stargazers)
 [![Forks](https://img.shields.io/github/forks/rananisarsb51214-web/Nisar-aios-?style=flat-square)](https://github.com/rananisarsb51214-web/Nisar-aios-/forks)
 
@@ -19,6 +19,7 @@ This project converts the LiteRT-LM tool-calling example into a modular Nisar AI
 - [Table of Contents](#table-of-contents-)
 - [Features](#features-)
 - [Tech Stack](#tech-stack-)
+- [Core Concepts](#core-concepts-)
 - [Installation](#installation-)
 - [Usage](#usage-)
 - [Real-world Use Cases](#real-world-use-cases-)
@@ -30,36 +31,81 @@ This project converts the LiteRT-LM tool-calling example into a modular Nisar AI
 
 ## Features ✨
 
-- **✓ Terminal Tool:** Execute terminal commands seamlessly.
-- **✓ File System Tool:** Read and write files to the system.
-- **✓ Firebase Admin:** Integrate with Firebase operations.
-- **✓ Google Workspace:** Interact with Google Workspace APIs.
-- **✓ GitHub Integration:** Support for GitHub operations.
-- **✓ Cloud Functions:** Deploy and manage cloud functions.
-- **✓ Memory Engine:** Utilizes a memory engine for enhanced capabilities.
-- **✓ Autonomous Tool Calling:** Enables autonomous execution of tools.
-- **✓ Self-Healing Rollback:** Implements self-healing and rollback mechanisms.
-- **✓ Multi-Agent Architecture:** Supports multi-agent system design.
-- **✓ Android + Termux Compatible:** Compatible with Android and Termux environments.
+- **Modular Design:** Extensible foundation for AI OS components.
+- **Tool Integration:** Seamlessly integrates various tools (Terminal, File System, Firebase, Google Workspace, GitHub, Cloud Functions).
+- **Autonomous Execution:** Supports autonomous tool calling and execution.
+- **Robust Error Handling:** Utilizes a `Result` wrapper for type-safe error management and includes `onFailure` hooks for cleanup.
+- **Intent Routing:** Intelligent routing of user intents to appropriate tools via `IntentRouter` and `ToolRegistry`.
+- **State Management:** Tools are designed to be stateless, with orchestration managed by `NisarAIOS`.
+- **Compatibility:** Compatible with Android and Termux environments.
+- **AI Integration:** Extensible with AI models like Gemini and Claude API.
 
 ## Tech Stack 💻
 
-- **Languages:** Kotlin, TypeScript, Python, Node.js
-- **Frameworks:** React (implied by React dashboard generation)
-- **Cloud:** Google Cloud (Cloud Run, Cloud Functions), Firebase
-- **AI:** Gemini, Claude API
-- **Tools:** LiteRT-LM, Docker (potential for future integration)
+- **Languages:** Kotlin
+- **Frameworks:** LiteRT-LM (for LLM interactions)
+- **Cloud:** Google Cloud (implied by features like Cloud Functions, Firebase)
+- **AI:** Gemini, Claude API (mentioned as extensible options)
+- **Tools:** Docker (potential for future integration), React (implied for dashboard generation)
+
+## Core Concepts 💡
+
+This project is built around a robust AI OS architecture, centered on the following core components:
+
+### 1. `BaseTool` 🛠️
+
+An abstract class defining the contract for all tools within the Nisar AI OS. Key aspects include:
+
+- **`name`**: Unique identifier for the tool.
+- **`description`**: Human-readable explanation of the tool's purpose.
+- **`canHandle(intent: String)`**: Method to determine if the tool can process a given intent.
+- **`execute(intent: String, params: Map<String, Any>)`**: The main execution logic for the tool, returning a `Result<String>`.
+- **`validateParams(params: Map<String, Any>)`**: Optional parameter validation.
+- **`onFailure(params: Map<String, Any>, error: Throwable)`**: Callback for cleanup logic upon execution failure.
+
+### 2. `ToolRegistry` 🗂️
+
+Manages the registration and discovery of `BaseTool` implementations. It provides methods to:
+
+- **`register(tool: BaseTool)`**: Add a tool to the registry.
+- **`findTool(intent: String)`**: Find the first tool that can handle an intent.
+- **`findAllTools(intent: String)`**: Find all tools that can handle an intent.
+- **`getTool(name: String)`**: Retrieve a tool by its name.
+- **`listTools()`**: List all registered tools.
+
+### 3. `IntentRouter` 🧭
+
+Responsible for parsing user input and routing it to the appropriate tool(s) via the `ToolRegistry`. It simplifies input by:
+
+- **`extractIntent(userMessage: String)`**: Normalizes user input to extract a primary intent.
+- **`routeToTool(userMessage: String)`**: Finds a single matching tool.
+- **`routeToAllTools(userMessage: String)`**: Finds all potential tools for an intent.
+
+### 4. `NisarAIOS` 🤖
+
+The central orchestration kernel. It coordinates the entire process:
+
+- Takes user input.
+- Uses `IntentRouter` to find matching tools.
+- Delegates execution to tools via `ToolRegistry`.
+- Manages `Result` wrappers for success and error handling.
+- Aggregates results into an `ExecutionContext`.
+- Supports executing specific tools directly.
+
+### 5. `Result<T>` ✅
+
+A sealed class that provides type-safe handling of operations that can either succeed with a value (`Success<T>`) or fail with an error message (`Error`). This pattern avoids traditional exception-based error handling for tool executions, promoting cleaner code and easier debugging.
 
 ## Installation ⚙️
 
-This project is designed to be a foundational framework. Specific installation steps will depend on the desired application. However, the core `NisarAIOS.kt` class and its tools can be integrated into a Kotlin project utilizing the LiteRT-LM library.
+This project is designed as a foundational framework. Integrating its core components into a Kotlin project leveraging the LiteRT-LM library is straightforward. 
 
 1.  **Prerequisites:**
     *   Java Development Kit (JDK) installed.
-    *   LiteRT-LM library dependency added to your project.
+    *   LiteRT-LM library dependency configured in your project.
 
 2.  **Add LiteRT-LM Dependency:**
-    Ensure you have the LiteRT-LM library added to your project's build configuration (e.g., `build.gradle.kts` or `pom.xml`).
+    Ensure the LiteRT-LM library is added to your project's build configuration (e.g., `build.gradle.kts` or `pom.xml`).
 
     ```kotlin
     // Example for build.gradle.kts
@@ -68,65 +114,102 @@ This project is designed to be a foundational framework. Specific installation s
     }
     ```
 
-3.  **Integrate `NisarSystemTools`:**
-    Copy the `NisarSystemTools` class into your project and ensure it's in the correct package (`com.nisar.aios`).
+3.  **Integrate Core Components:**
+    Copy the relevant classes (e.g., `BaseTool`, `ToolRegistry`, `IntentRouter`, `NisarAIOS`) into your project, ensuring they are in the correct packages (e.g., `com.nisar.aios.core`).
+
+4.  **Register Tools:**
+    Initialize `ToolRegistry` and register your custom tools.
+
+    ```kotlin
+    val registry = ToolRegistry()
+    registry.register(NisarSystemTools()) // Assuming NisarSystemTools is implemented
+    // Register other tools as needed
+    ```
 
 ## Usage 💡
 
-This project demonstrates how to create an AI OS architecture capable of executing complex commands through a conversation engine and tool integration. Here's how you can use it:
+The `NisarAIOS` class orchestrates tool execution based on user input. Here's how you can use it:
 
-### 1. Create Conversation Instance 🗣️
+### 1. Initialize AI OS 🚀
 
-Initialize the `LiteRtLmEngine` and create a conversation, configuring it with `NisarSystemTools` and enabling `autoExecuteTools`.
-
-```kotlin
-val engine = LiteRtLmEngine.create()
-
-val conversation = engine.createConversation(
-    ConversationConfig(
-        tools = listOf(
-            tool(NisarSystemTools())
-        ),
-        autoExecuteTools = true
-    )
-)
-```
-
-### 2. Send Commands ⌨️
-
-Send a multi-line command to the conversation. The AI OS will parse these commands and utilize the integrated tools to execute them.
+Create an instance of `NisarAIOS`, providing a configured `ToolRegistry`.
 
 ```kotlin
-val result = conversation.sendMessageAsync(
-"""
-Create React dashboard.
-Generate Firebase backend.
-Deploy Cloud Functions.
-Commit to GitHub.
-"""
-)
+// Assuming NisarSystemTools is implemented and registered
+val registry = ToolRegistry()
+registry.register(NisarSystemTools()) // Example tool registration
 
-println(result.text)
+val aiOS = NisarAIOS(registry)
 ```
 
-This example showcases how the AI OS can orchestrate tasks like creating a React dashboard, setting up a Firebase backend, deploying Cloud Functions, and committing changes to GitHub.
+### 2. Run Commands ⌨️
+
+Send user input to the `run` function. The AI OS will parse the input, route it to the appropriate tool(s), execute them, and return the results.
+
+```kotlin
+val userInput = "Read the file located at /path/to/your/file.txt"
+val result: Result<ExecutionContext> = aiOS.run(userInput)
+
+when (result) {
+    is Result.Success -> {
+        println("Execution successful!")
+        result.value.outputs.forEach { output ->
+            println("Tool: ${output.toolName}, Output: ${output.output}")
+        }
+    }
+    is Result.Error -> {
+        println("Execution failed: ${result.error}")
+    }
+}
+```
+
+### 3. Executing Specific Tools 🎯
+
+If you know the specific tool you want to use, you can execute it directly.
+
+```kotlin
+val toolName = "file_system_tool"
+val userInput = "Write 'Hello, NisarAIOS!' to /path/to/output.txt"
+val params = mapOf("filePath" to "/path/to/output.txt", "content" to "Hello, NisarAIOS!")
+
+val result: Result<String> = aiOS.executeWithTool(toolName, userInput, params)
+
+when (result) {
+    is Result.Success -> println("Tool output: ${result.value}")
+    is Result.Error -> println("Tool error: ${result.error}")
+}
+```
 
 ## Real-world Use Cases 🌍
 
-- **Automated Development Workflows:** Automate the setup and deployment of new projects.
-- **CI/CD Pipeline Enhancement:** Integrate AI-driven steps into CI/CD pipelines for intelligent task execution.
-- **Cloud Resource Management:** Programmatically manage cloud resources (e.g., deploy services, configure networks).
-- **Data Engineering Tasks:** Automate data processing, file manipulation, and Firebase operations.
-- **Autonomous Agents:** Build agents that can perform complex tasks with minimal human intervention.
+- **Automated Development Workflows:** Streamline project setup, code generation, and deployment pipelines.
+- **CI/CD Pipeline Enhancement:** Integrate intelligent task execution and automation within CI/CD processes.
+- **Cloud Resource Management:** Programmatically manage and configure cloud infrastructure (e.g., deploying services, setting up networks).
+- **Data Engineering Tasks:** Automate data processing, file manipulation, and interaction with services like Firebase.
+- **Autonomous Agents:** Develop agents capable of performing complex, multi-step tasks with minimal human intervention.
+- **DevOps Automation:** Automate routine DevOps tasks, security checks, and operational workflows.
 
 ## Project Structure 📁
 
 ```
 Nisar-aios-
-└── README.md
+├── README.md
+└── src
+    └── main
+        └── kotlin
+            └── com
+                └── nisar
+                    └── aios
+                        ├── core
+                        │   ├── BaseTool.kt
+                        │   ├── IntentRouter.kt
+                        │   ├── NisarAIOS.kt
+                        │   └── ToolRegistry.kt
+                        └── utils
+                            └── Result.kt
 ```
 
-*Note: The current analysis indicates only a `README.md` file. A full project would likely have more files organized into standard directories (e.g., `src/main/kotlin`, `src/test/kotlin`).*
+*Note: This structure is inferred from the analyzed files. A complete project may include additional directories for tests, resources, and other modules.*
 
 ## Contributing 🤝
 
@@ -176,16 +259,9 @@ _© 2023 NisarAI-os. All rights reserved._
 
 - **Repository:** [rananisarsb51214-web/Nisar-aios-](https://github.com/rananisarsb51214-web/Nisar-aios-)
 - **Author:** rananisarsb51214-web
-- **Contact:** [rananisarsb51214-nisaraios)
+- **Contact:** [rananisarsb51214-nisaraios](mailto:rananisarsb51214@nisaraios.com)
 
 **Show your support!** ⭐ Star | 🍴 Fork | ⚠️ Issues
-
----
-**<p align="center">Generated by [ReadmeCodeGen](https://www.readmecodegen.com/)</p>**
-
----
-**<p align="center">Generated by [ReadmeCodeGen](https://www.readmecodegen.com/)</p>**
-
 
 ---
 **<p align="center">Generated by [ReadmeCodeGen](https://www.readmecodegen.com/)</p>**
